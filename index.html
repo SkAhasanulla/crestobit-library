@@ -297,25 +297,39 @@
     color: var(--text);
     padding: 22px;
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1.15fr 0.85fr;
     gap: 20px;
   }
-  @media (max-width: 820px) { .helper-body { grid-template-columns: 1fr; } }
+  @media (max-width: 860px) { .helper-body { grid-template-columns: 1fr; } }
 
   .form-row { margin-bottom: 12px; }
-  .form-row label { display: block; font-size: 12.5px; font-weight: 600; margin-bottom: 4px; color: #334155; }
-  .form-row input, .form-row textarea {
+  .form-row label { display: block; font-size: 12.5px; font-weight: 600; margin-bottom: 5px; color: #334155; }
+  .form-row input, .form-row select, .form-row textarea {
     width: 100%;
     padding: 9px 11px;
     border: 1px solid #cbd5e1;
     border-radius: 8px;
     font-size: 13px;
+    background: #fff;
+    color: var(--text);
   }
-  .form-row textarea {
+  .form-row input:focus, .form-row select:focus, .form-row textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+  }
+  .form-row textarea.all-code-box {
     font-family: 'Consolas', 'Monaco', monospace;
-    min-height: 95px;
+    min-height: 220px;
     resize: vertical;
+    line-height: 1.5;
   }
+  .custom-cat-input {
+    margin-top: 8px;
+    display: none;
+    background: #f8fafc;
+  }
+  .custom-cat-input.show { display: block; }
+
   .json-box {
     background: #0f172a;
     color: #e2e8f0;
@@ -326,7 +340,7 @@
     line-height: 1.55;
     white-space: pre-wrap;
     word-wrap: break-word;
-    max-height: 460px;
+    max-height: 510px;
     overflow-y: auto;
   }
 </style>
@@ -375,10 +389,7 @@
     <div class="modal-toolbar">
       <div class="tabs">
         <button type="button" class="tab-btn active" data-tab="preview" onclick="switchTab('preview')">Live Preview</button>
-        <button type="button" class="tab-btn" data-tab="all" onclick="switchTab('all')">Full Code</button>
-        <button type="button" class="tab-btn" data-tab="html" onclick="switchTab('html')">HTML</button>
-        <button type="button" class="tab-btn" data-tab="css" onclick="switchTab('css')">CSS</button>
-        <button type="button" class="tab-btn" data-tab="js" onclick="switchTab('js')">JS</button>
+        <button type="button" class="tab-btn" data-tab="all" onclick="switchTab('all')">All-in-One Code</button>
       </div>
 
       <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
@@ -394,13 +405,13 @@
   </div>
 </div>
 
-<!-- JSON Generator Helper Modal -->
+<!-- JSON Generator Helper Modal (Single All-in-One Code + Category Dropdown) -->
 <div id="jsonHelperModal" class="modal-backdrop" onclick="closeModalOnBg(event, 'jsonHelperModal')">
   <div class="modal-box">
     <div class="modal-top">
       <div>
-        <h3>JSON Generator Helper (for sections.json)</h3>
-        <span style="font-size:12px; color:#94a3b8;">সাধারণ HTML/CSS/JS পেস্ট করুন—নিচে বৈধ JSON তৈরি হয়ে যাবে</span>
+        <h3>JSON Generator Helper (All-in-One Code)</h3>
+        <span style="font-size:12px; color:#94a3b8;">ক্যাটাগরি সিলেক্ট করুন এবং HTML + CSS + JS একসাথে পেস্ট করুন</span>
       </div>
       <button type="button" class="btn-close" onclick="closeModal('jsonHelperModal')">✕ Close</button>
     </div>
@@ -415,43 +426,48 @@
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
           <div class="form-row">
             <label for="genId">ID</label>
-            <input type="text" id="genId" value="cb-section-new" oninput="updateJsonOutput()">
+            <input type="text" id="genId" value="cb-hero-new" oninput="updateJsonOutput()">
           </div>
           <div class="form-row">
             <label for="genPrefix">Prefix</label>
             <input type="text" id="genPrefix" value="cb-" oninput="updateJsonOutput()">
           </div>
         </div>
+
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
           <div class="form-row">
             <label for="genTitle">Title</label>
-            <input type="text" id="genTitle" placeholder="e.g. Feature Bento Grid" oninput="updateJsonOutput()">
+            <input type="text" id="genTitle" placeholder="e.g. Hero Section Dark" oninput="updateJsonOutput()">
           </div>
           <div class="form-row">
-            <label for="genCategory">Category</label>
-            <input type="text" id="genCategory" placeholder="e.g. Bento Grid" oninput="updateJsonOutput()">
+            <label for="genCategorySelect">Category (Select Existing or New)</label>
+            <select id="genCategorySelect" onchange="handleCategorySelectChange()">
+              <option value="Hero Section">Hero Section</option>
+              <option value="Footer Section">Footer Section</option>
+              <option value="Header / Navbar">Header / Navbar</option>
+              <option value="Bento Grid">Bento Grid</option>
+              <option value="Pricing Table">Pricing Table</option>
+              <option value="CTA">CTA</option>
+              <option value="Features">Features</option>
+              <option value="__NEW__">+ Add New Category</option>
+            </select>
+            <input type="text" id="genCategoryCustom" class="custom-cat-input" placeholder="নতুন ক্যাটাগরির নাম লিখুন..." oninput="updateJsonOutput()">
           </div>
         </div>
+
         <div class="form-row">
           <label for="genThumb">Thumbnail Image Path / URL</label>
           <input type="text" id="genThumb" value="./images/section-1.png" oninput="updateJsonOutput()">
         </div>
+
         <div class="form-row">
-          <label for="genHtml">HTML Code</label>
-          <textarea id="genHtml" placeholder="<section class='cb-sec'>...</section>" oninput="updateJsonOutput()"></textarea>
-        </div>
-        <div class="form-row">
-          <label for="genCss">CSS Code</label>
-          <textarea id="genCss" placeholder=".cb-sec { ... }" oninput="updateJsonOutput()"></textarea>
-        </div>
-        <div class="form-row">
-          <label for="genJs">JS Code (Optional)</label>
-          <textarea id="genJs" placeholder="// Optional JS" oninput="updateJsonOutput()"></textarea>
+          <label for="genAllCode">All-in-One Code (HTML + CSS + JS together)</label>
+          <textarea id="genAllCode" class="all-code-box" placeholder="<style>&#10;.cb-hero { ... }&#10;</style>&#10;&#10;<section class=&quot;cb-hero&quot;>&#10;  ...&#10;</section>&#10;&#10;<script>&#10;// Optional JS&#10;</script>" oninput="updateJsonOutput()"></textarea>
         </div>
       </div>
 
       <div>
-        <label class="form-row" style="display:block; font-size:12.5px; font-weight:700; margin-bottom:6px;">Generated JSON Object</label>
+        <label style="display:block; font-size:12.5px; font-weight:700; margin-bottom:6px;">Generated JSON Object</label>
         <pre id="generatedJsonOutput" class="json-box"></pre>
       </div>
     </div>
@@ -459,10 +475,32 @@
 </div>
 
 <script>
+  const BASE_CATEGORIES = [
+    'Hero Section',
+    'Footer Section',
+    'Header / Navbar',
+    'Bento Grid',
+    'Pricing Table',
+    'CTA',
+    'Features'
+  ];
+
   let allSections = [];
   let activeCategory = 'All';
   let currentSection = null;
   let currentTab = 'preview';
+
+  function getCombinedRawCode(section) {
+    if (!section) return '';
+    if (typeof section.code === 'string' && section.code.trim()) {
+      return section.code;
+    }
+    let parts = [];
+    if (section.css && section.css.trim()) parts.push(`<style>\n${section.css.trim()}\n</style>`);
+    if (section.html && section.html.trim()) parts.push(section.html.trim());
+    if (section.js && section.js.trim()) parts.push(`<script>\n${section.js.trim()}\n<\/script>`);
+    return parts.join('\n\n');
+  }
 
   async function initLibrary() {
     try {
@@ -473,14 +511,64 @@
         '<p style="color:#ef4444;">sections.json লোড হয়নি। স্থানীয়ভাবে চালাতে হলে VS Code Live Server বা GitHub/Cloudflare Pages-এ হোস্ট করুন।</p>';
       return;
     }
+    populateCategoryDropdown();
     renderCategories();
     renderGrid();
+  }
+
+  function populateCategoryDropdown() {
+    const select = document.getElementById('genCategorySelect');
+    const currentVal = select.value;
+    const set = new Set(BASE_CATEGORIES);
+    allSections.forEach(s => {
+      if (s.category && s.category.trim()) {
+        set.add(s.category.trim());
+      }
+    });
+
+    const optionsHtml = Array.from(set).map(cat =>
+      `<option value="${escapeAttr(cat)}">${escapeAttr(cat)}</option>`
+    ).join('');
+
+    select.innerHTML = `${optionsHtml}<option value="__NEW__">+ Add New Category</option>`;
+    if (currentVal && Array.from(select.options).some(o => o.value === currentVal)) {
+      select.value = currentVal;
+    }
+  }
+
+  function escapeAttr(str) {
+    return String(str || '')
+      .replace(/&/g, '&amp;')
+      .replace(/"/g, '&quot;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+  }
+
+  function handleCategorySelectChange() {
+    const select = document.getElementById('genCategorySelect');
+    const customInput = document.getElementById('genCategoryCustom');
+    if (select.value === '__NEW__') {
+      customInput.classList.add('show');
+      customInput.focus();
+    } else {
+      customInput.classList.remove('show');
+    }
+    updateJsonOutput();
+  }
+
+  function getSelectedCategoryValue() {
+    const select = document.getElementById('genCategorySelect');
+    if (select.value === '__NEW__') {
+      return document.getElementById('genCategoryCustom').value.trim() || 'General';
+    }
+    return select.value;
   }
 
   function renderCategories() {
     const counts = { All: allSections.length };
     allSections.forEach(s => {
-      counts[s.category] = (counts[s.category] || 0) + 1;
+      const cat = s.category || 'General';
+      counts[cat] = (counts[cat] || 0) + 1;
     });
 
     const catList = document.getElementById('categoryList');
@@ -502,8 +590,9 @@
   function renderGrid() {
     const query = document.getElementById('searchInput').value.trim().toLowerCase();
     const filtered = allSections.filter(s => {
-      const matchCat = activeCategory === 'All' || s.category === activeCategory;
-      const matchQuery = !query || s.title.toLowerCase().includes(query) || s.category.toLowerCase().includes(query);
+      const cat = s.category || 'General';
+      const matchCat = activeCategory === 'All' || cat === activeCategory;
+      const matchQuery = !query || (s.title || '').toLowerCase().includes(query) || cat.toLowerCase().includes(query);
       return matchCat && matchQuery;
     });
 
@@ -518,12 +607,12 @@
     grid.innerHTML = filtered.map(s => `
       <article class="sec-card" onclick="openSection('${s.id}')">
         <div class="thumb-wrap">
-          <img src="${s.thumbnail}" alt="${s.title}" loading="lazy">
+          <img src="${s.thumbnail}" alt="${escapeAttr(s.title)}" loading="lazy">
         </div>
         <div class="card-body">
           <div>
-            <div class="card-title">${s.title}</div>
-            <div class="card-cat">${s.category}</div>
+            <div class="card-title">${escapeAttr(s.title)}</div>
+            <div class="card-cat">${escapeAttr(s.category || 'General')}</div>
           </div>
           <span class="btn-open">View & Copy</span>
         </div>
@@ -537,23 +626,11 @@
     return text.replace(new RegExp(escaped, 'g'), newPrefix);
   }
 
-  function getProcessedParts() {
+  function getProcessedCode() {
     const orig = currentSection.prefix || 'cb-';
     const custom = document.getElementById('customPrefixInput').value.trim() || orig;
-    return {
-      html: applyCustomPrefix(currentSection.html || '', orig, custom),
-      css: applyCustomPrefix(currentSection.css || '', orig, custom),
-      js: applyCustomPrefix(currentSection.js || '', orig, custom)
-    };
-  }
-
-  function getFullCombinedCode() {
-    const parts = getProcessedParts();
-    let out = `<style>\n${parts.css}\n</style>\n\n${parts.html}`;
-    if (parts.js.trim()) {
-      out += `\n\n<script>\n${parts.js}\n<\/script>`;
-    }
-    return out;
+    const rawCode = getCombinedRawCode(currentSection);
+    return applyCustomPrefix(rawCode, orig, custom);
   }
 
   function openSection(id) {
@@ -561,7 +638,7 @@
     if (!currentSection) return;
 
     document.getElementById('modalTitle').textContent = currentSection.title;
-    document.getElementById('modalSubtitle').textContent = currentSection.category;
+    document.getElementById('modalSubtitle').textContent = currentSection.category || 'General';
     document.getElementById('customPrefixInput').value = currentSection.prefix || 'cb-';
     document.getElementById('codeModal').classList.add('open');
 
@@ -579,22 +656,16 @@
   function renderModalContent() {
     if (!currentSection) return;
     const body = document.getElementById('modalBody');
-    const parts = getProcessedParts();
+    const code = getProcessedCode();
 
     if (currentTab === 'preview') {
-      const srcDoc = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,sans-serif;}${parts.css}</style></head><body>${parts.html}<script>${parts.js}<\/script></body></html>`;
+      const srcDoc = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,sans-serif;}</style></head><body>${code}</body></html>`;
       body.innerHTML = `<iframe class="live-frame" sandbox="allow-scripts"></iframe>`;
       body.querySelector('iframe').srcdoc = srcDoc;
     } else {
-      let codeText = '';
-      if (currentTab === 'all') codeText = getFullCombinedCode();
-      if (currentTab === 'html') codeText = parts.html;
-      if (currentTab === 'css') codeText = parts.css;
-      if (currentTab === 'js') codeText = parts.js || '// No JavaScript for this section';
-
       const pre = document.createElement('pre');
       pre.className = 'code-view';
-      pre.textContent = codeText;
+      pre.textContent = code;
       body.innerHTML = '';
       body.appendChild(pre);
     }
@@ -602,19 +673,7 @@
 
   function copyCurrentCode() {
     if (!currentSection) return;
-    const parts = getProcessedParts();
-    let textToCopy = '';
-
-    if (currentTab === 'preview' || currentTab === 'all') {
-      textToCopy = getFullCombinedCode();
-    } else if (currentTab === 'html') {
-      textToCopy = parts.html;
-    } else if (currentTab === 'css') {
-      textToCopy = parts.css;
-    } else if (currentTab === 'js') {
-      textToCopy = parts.js;
-    }
-
+    const textToCopy = getProcessedCode();
     navigator.clipboard.writeText(textToCopy).then(() => {
       const btn = document.getElementById('copyCodeBtn');
       const prev = btn.textContent;
@@ -625,6 +684,7 @@
 
   /* JSON Generator Helper */
   function openJsonHelper() {
+    populateCategoryDropdown();
     updateJsonOutput();
     document.getElementById('jsonHelperModal').classList.add('open');
   }
@@ -633,12 +693,10 @@
     const obj = {
       id: document.getElementById('genId').value.trim() || 'cb-section-new',
       title: document.getElementById('genTitle').value.trim() || 'Untitled Section',
-      category: document.getElementById('genCategory').value.trim() || 'General',
+      category: getSelectedCategoryValue(),
       prefix: document.getElementById('genPrefix').value.trim() || 'cb-',
       thumbnail: document.getElementById('genThumb').value.trim() || './images/section-1.png',
-      html: document.getElementById('genHtml').value,
-      css: document.getElementById('genCss').value,
-      js: document.getElementById('genJs').value
+      code: document.getElementById('genAllCode').value
     };
     document.getElementById('generatedJsonOutput').textContent = JSON.stringify(obj, null, 2);
   }
